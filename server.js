@@ -51,7 +51,7 @@ app.get("/list/:userID", async function(req, res){
         return;
     }
 
-    // get all notifications
+    // get user data
     if (userDataString != ""){
         var userData = JSON.parse(userDataString);
     } else {
@@ -76,7 +76,40 @@ app.get("/list/:userID", async function(req, res){
 });
 
 // get note
-app.get("/get/:userID/:noteID", function(req, res){
+app.get("/get/:userID/:noteID", async function(req, res){
+    console.log("Getting user note.");
+
+    // check if user exists
+    const userID = req.params.userID;
+    var path = __dirname + "/data/" + userID + ".json";
+    try {
+        var userDataString = await fs.readFile(path, "utf8");
+    } catch (err) {
+        console.error("User data could not be retrieved.");
+        res.status(404).send("User data not found.");
+        return;
+    }
+    
+    // get user data
+    if (userDataString != ""){
+        var userData = JSON.parse(userDataString);
+    } else {
+        console.log("No user notes found.");
+        res.status(204).send("User has no notes.");
+        return;
+    }
+
+    // check if note exists
+    const noteID = req.params.noteID;
+    if (noteID >= userData.notes.length){
+        console.error("Specified note does not exist.");
+        res.status(404).send("Note not found.");
+        return;
+    }
+
+    // send to user
+    console.log("Sending success");
+    res.status(200).json(userData.notes[noteID]);
 });
 
 // post new note
