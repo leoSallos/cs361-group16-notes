@@ -65,7 +65,8 @@ app.get("/list/:userID", async function(req, res){
     for (var i = 0; i < userData.notes.length; i++){
         const note = {
             id: i, 
-            title: userData.notes[i].title
+            title: userData.notes[i].title,
+            updated: userData.notes[i].updated
         };
         notesList.noteList.push(note);
     }
