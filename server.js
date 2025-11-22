@@ -95,7 +95,7 @@ app.get("/get/:userID/:noteID", async function(req, res){
         var userData = JSON.parse(userDataString);
     } else {
         console.log("No user notes found.");
-        res.status(204).send("User has no notes.");
+        res.status(404).send("User has no notes.");
         return;
     }
 
@@ -113,11 +113,114 @@ app.get("/get/:userID/:noteID", async function(req, res){
 });
 
 // post new note
-app.post("/new/:userID/", function(req, res){
+app.post("/new/:userID/", async function(req, res){
+    console.log("Getting new note request.");
+
+    // get post data
+    const data = request.body;
+    if (!data.title || !data.created || !data.updated || !data.textContent){
+        console.error("Improper request body format");
+        res.status(400).send("Improper request body format.");
+        return;
+    }
+
+    // check if user exists
+    const userID = req.params.userID;
+    var path = __dirname + "/data/" + userID + ".json";
+    try {
+        var userDataString = await fs.readFile(path, "utf8");
+    } catch (err) {
+        console.log("User does not exist, creating new user.");
+        var userDataString = "{notes:[]}";
+    }
+    
+    // get user data
+    if (userDataString != ""){
+        var userData = JSON.parse(userDataString);
+    } else {
+        console.log("No user notes found.");
+        res.status(404).send("User has no notes.");
+        return;
+    }
+
+    // create note
+    const note = {
+        title: data.title,
+        created: data.created,
+        updated: data.updated,
+        textContent: data.textContent
+    };
+    userData.notes.push(note);
+
+    // save data to file
+    userDataString = await JSON.stringify(userData);
+    try {
+        await fs.writeFile(path, userDataString, "utf8");
+    } catch (err) {
+        console.error("File write failed: " + err);
+        res.status(500).send("Server error");
+        return;
+    }
+    console.log("Sending success");
+    res.status(200).send("Note successfully submitted.");
 });
 
 // post note update
-app.post("/update/:userID/:noteID", function(req, res){
+app.post("/update/:userID/:noteID", async function(req, res){
+    console.log("Getting note update request.");
+
+    // get post data
+    const data = request.body;
+    if (!data.title || !data.updated || !data.textContent){
+        console.error("Improper request body format");
+        res.status(400).send("Improper request body format.");
+        return;
+    }
+
+    // check if user exists
+    const userID = req.params.userID;
+    var path = __dirname + "/data/" + userID + ".json";
+    try {
+        var userDataString = await fs.readFile(path, "utf8");
+    } catch (err) {
+        console.error("User data could not be retrieved.");
+        res.status(404).send("User data not found.");
+        return;
+    }
+    
+    // get user data
+    if (userDataString != ""){
+        var userData = JSON.parse(userDataString);
+    } else {
+        console.log("No user notes found.");
+        res.status(404).send("User has no notes.");
+        return;
+    }
+
+    // check if note exists
+    const noteID = req.params.noteID;
+    if (noteID >= userData.notes.length){
+        console.error("Specified note does not exist.");
+        res.status(404).send("Note not found.");
+        return;
+    }
+
+    // update note
+    userData.notes[noteID].title = data.title;
+    userData.notes[noteID].updated = data.updated;
+    userData.notes[noteID].textContent = data.textContent;
+
+    // save data to file
+    userDataString = await JSON.stringify(userData);
+    try {
+        await fs.writeFile(path, userDataString, "utf8");
+    } catch (err) {
+        console.error("File write failed: " + err);
+        res.status(500).send("Server error");
+        return;
+    }
+    console.log("Sending success");
+    res.status(200).send("Note successfully submitted.");
 });
 
 // start server listening
