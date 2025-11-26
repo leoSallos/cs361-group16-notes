@@ -49,6 +49,7 @@ Response body format:
         {
             id: <noteID>,
             title: <title of note>,
+            created: <date created in UNIX time>
             updated: <date last updated in UNIX time>
         }
     ]

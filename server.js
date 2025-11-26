@@ -66,7 +66,8 @@ app.get("/list/:userID", async function(req, res){
         const note = {
             id: i, 
             title: userData.notes[i].title,
-            updated: userData.notes[i].updated
+            updated: userData.notes[i].updated,
+            created: userData.notes[i].created
         };
         notesList.notes.push(note);
     }
