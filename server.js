@@ -33,7 +33,7 @@ app.use(function (req, res, next) {
 // server ping
 app.get("/", function(req, res) {
     console.log("Ping recieved")
-    res.status(204);
+    res.sendStatus(204);
 });
 
 // get note list
@@ -61,19 +61,19 @@ app.get("/list/:userID", async function(req, res){
     }
 
     // create list
-    var notesList = {noteList: []};
+    var notesList = {notes: []};
     for (var i = 0; i < userData.notes.length; i++){
         const note = {
             id: i, 
             title: userData.notes[i].title,
             updated: userData.notes[i].updated
         };
-        notesList.noteList.push(note);
+        notesList.notes.push(note);
     }
 
     // send to user
     console.log("Sending success");
-    res.status(200).json(notesLists);
+    res.status(200).json(notesList);
 });
 
 // get note
@@ -171,7 +171,7 @@ app.post("/update/:userID/:noteID", async function(req, res){
     console.log("Getting note update request.");
 
     // get post data
-    const data = request.body;
+    const data = req.body;
     if (!data.title || !data.updated || !data.textContent){
         console.error("Improper request body format");
         res.status(400).send("Improper request body format.");
